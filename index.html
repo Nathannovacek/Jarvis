@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Project Jarvis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #e31937;
+    --accent2: #ff6b35;
+    --text: #f0f0f8;
+    --muted: #6b6b88;
+    --success: #22d3a0;
+    --warning: #f5c842;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+    --s-identified: #6b6b88;
+    --s-contacted: #4a90d9;
+    --s-meeting: #f5c842;
+    --s-proposal: #ff6b35;
+    --s-won: #22d3a0;
+    --s-lost: #e31937;
+  }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--sans);
+    min-height: 100vh; padding: 32px 24px;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(227,25,55,0.13) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px);
+  }
+
+  /* HERO */
+  .hero { margin-bottom: 40px; }
+  .hero-top { display: flex; align-items: center; gap: 16px; margin-bottom: 6px; }
+  .logo { width: 44px; height: 44px; background: var(--accent); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: white; flex-shrink: 0; }
+  .hero-title { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; }
+  .hero-title span { color: var(--accent); }
+  .hero-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.05em; margin-left: 60px; }
+  .hero-date { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: 60px; margin-top: 4px; }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 32px; }
+  @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 500px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .stat-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .stat-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* PIPELINE BAR */
+  .pipeline-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 32px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .section-label::before { content: ''; display: inline-block; width: 3px; height: 10px; background: var(--accent); border-radius: 2px; }
+  .pipeline-bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; gap: 2px; margin-bottom: 12px; }
+  .pipeline-segment { display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; font-weight: 500; color: white; min-width: 0; overflow: hidden; white-space: nowrap; transition: flex 0.8s ease; }
+  .pipeline-legend { display: flex; flex-wrap: wrap; gap: 14px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* AGENT GRID */
+  .agents-section { margin-bottom: 32px; }
+  .agents-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 800px) { .agents-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 500px) { .agents-grid { grid-template-columns: 1fr; } }
+
+  .agent-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px; cursor: pointer; text-decoration: none; color: var(--text);
+    transition: all 0.2s; display: block; position: relative; overflow: hidden;
+  }
+  .agent-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.25s ease;
+  }
+  .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(227,25,55,0.12); }
+  .agent-card:hover::before { transform: scaleX(1); }
+
+  .agent-num { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 12px; }
+  .agent-icon { font-size: 24px; margin-bottom: 10px; }
+  .agent-name { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .agent-desc { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .agent-status { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+  .status-text { color: var(--success); }
+  .agent-arrow { position: absolute; bottom: 20px; right: 20px; font-size: 18px; color: var(--border); transition: color 0.2s, transform 0.2s; }
+  .agent-card:hover .agent-arrow { color: var(--accent); transform: translate(2px, -2px); }
+
+  /* FOLLOWUPS */
+  .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .bottom-row { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .panel-header { padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: space-between; }
+  .panel-link { font-family: var(--mono); font-size: 10px; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  .panel-link:hover { color: var(--accent); }
+  .followup-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid var(--border); }
+  .followup-row:last-child { border-bottom: none; }
+  .fu-company { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .fu-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fu-date { font-family: var(--mono); font-size: 11px; font-weight: 500; }
+  .overdue { color: var(--accent); }
+  .due-today { color: var(--warning); }
+  .due-soon { color: var(--accent2); }
+  .due-ok { color: var(--muted); }
+  .empty-state { padding: 28px 18px; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 2; }
+
+  /* FOOTER */
+  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .footer-left { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .footer-left span { color: var(--accent); }
+  .footer-right { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.5s ease both; }
+  .fade-up:nth-child(1) { animation-delay: 0.05s; }
+  .fade-up:nth-child(2) { animation-delay: 0.1s; }
+  .fade-up:nth-child(3) { animation-delay: 0.15s; }
+  .fade-up:nth-child(4) { animation-delay: 0.2s; }
+  .fade-up:nth-child(5) { animation-delay: 0.25s; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero fade-up">
+  <div class="hero-top">
+    <div class="logo">J</div>
+    <div class="hero-title">Project <span>Jarvis</span></div>
+  </div>
+  <div class="hero-sub">Tesla Enterprise/Fleet · Sales Intelligence System · Nate Novacek</div>
+  <div class="hero-date" id="heroDate"></div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row" id="statsRow"></div>
+
+<!-- PIPELINE BAR -->
+<div class="pipeline-wrap fade-up">
+  <div class="section-label">Live Pipeline</div>
+  <div class="pipeline-bar" id="pipelineBar"></div>
+  <div class="pipeline-legend" id="pipelineLegend"></div>
+</div>
+
+<!-- AGENTS -->
+<div class="agents-section">
+  <div class="section-label" style="margin-bottom:16px">Agents</div>
+  <div class="agents-grid">
+    <a class="agent-card fade-up" href="writer.html">
+      <div class="agent-num">AGENT_01</div>
+      <div class="agent-icon">✍️</div>
+      <div class="agent-name">Writer</div>
+      <div class="agent-desc">Draft cold outreach, follow-ups, meeting requests, and proposal intros in your voice.</div>
+      <div class="agent-status"><div class="status-dot"></div><span class="status-text">Live</span></div>
+      <div class="agent-arrow">↗</div>
+    </a>
+    <a class="agent-card fade-up" href="researcher.html">
+      <div class="agent-num">AGENT_02</div>
+      <div class="agent-icon">🔍</div>
+      <div class="agent-name">Researcher</div>
+      <div class="agent-desc">Generate full account briefs — fleet profile, EV readiness signals, decision makers, outreach hook.</div>
+      <div class="agent-status"><div class="status-dot"></div><span class="status-text">Live</span></div>
+      <div class="agent-arrow">↗</div>
+    </a>
+    <a class="agent-card fade-up" href="tracker.html">
+      <div class="agent-num">AGENT_03</div>
+      <div class="agent-icon">📊</div>
+      <div class="agent-name">Tracker</div>
+      <div class="agent-desc">Kanban pipeline board. Move accounts through stages, set follow-up dates, log notes.</div>
+      <div class="agent-status"><div class="status-dot"></div><span class="status-text">Live</span></div>
+      <div class="agent-arrow">↗</div>
+    </a>
+    <a class="agent-card fade-up" href="analyst.html">
+      <div class="agent-num">AGENT_04</div>
+      <div class="agent-icon">📈</div>
+      <div class="agent-name">Analyst</div>
+      <div class="agent-desc">Fleet TCO modelling, ROI calculations, and AI-generated proposal summaries with real numbers.</div>
+      <div class="agent-status"><div class="status-dot"></div><span class="status-text">Live</span></div>
+      <div class="agent-arrow">↗</div>
+    </a>
+    <a class="agent-card fade-up" href="briefer.html">
+      <div class="agent-num">AGENT_05</div>
+      <div class="agent-icon">⚡</div>
+      <div class="agent-name">Briefer</div>
+      <div class="agent-desc">Daily pipeline narrative, follow-up reminders, and prioritised next actions powered by AI.</div>
+      <div class="agent-status"><div class="status-dot"></div><span class="status-text">Live</span></div>
+      <div class="agent-arrow">↗</div>
+    </a>
+    <a class="agent-card fade-up" href="briefer.html" style="border-style:dashed;cursor:default;pointer-events:none;opacity:0.5">
+      <div class="agent-num">AGENT_06</div>
+      <div class="agent-icon">🔮</div>
+      <div class="agent-name">Coming Soon</div>
+      <div class="agent-desc">Next agent TBD — HubSpot sync, automated enrichment, or calendar integration.</div>
+      <div class="agent-status"><div class="status-dot" style="background:var(--muted)"></div><span style="color:var(--muted);font-family:var(--mono);font-size:10px">In planning</span></div>
+    </a>
+  </div>
+</div>
+
+<!-- BOTTOM ROW -->
+<div class="bottom-row">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="section-label" style="margin:0">Follow-ups Due</div>
+      <a class="panel-link" href="tracker.html">Open Tracker →</a>
+    </div>
+    <div id="followupList"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div class="section-label" style="margin:0">Recent Accounts</div>
+      <a class="panel-link" href="tracker.html">View All →</a>
+    </div>
+    <div id="recentList"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-left">Project <span>Jarvis</span> · Built by Nate Novacek · Tesla Enterprise/Fleet</div>
+  <div class="footer-right" id="footerTime"></div>
+</div>
+
+<script>
+const STAGES = ['Identified','Contacted','Meeting','Proposal','Won','Lost'];
+const STAGE_COLORS = { Identified:'var(--s-identified)', Contacted:'var(--s-contacted)', Meeting:'var(--s-meeting)', Proposal:'var(--s-proposal)', Won:'var(--s-won)', Lost:'var(--s-lost)' };
+
+function loadAccounts() {
+  try { return JSON.parse(localStorage.getItem('jarvis_tracker') || '[]'); } catch(e) { return []; }
+}
+
+function dueSeverity(dateStr) {
+  if (!dateStr) return null;
+  const diff = (new Date(dateStr) - new Date()) / 86400000;
+  if (diff < 0) return 'overdue';
+  if (diff < 1) return 'today';
+  if (diff <= 3) return 'soon';
+  return 'ok';
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-AU', { day:'numeric', month:'short' });
+}
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function init() {
+  const now = new Date();
+  document.getElementById('heroDate').textContent = greeting() + ', Nate · ' + now.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  document.getElementById('footerTime').textContent = 'Last loaded: ' + now.toLocaleTimeString('en-AU', {hour:'2-digit',minute:'2-digit'});
+
+  const accounts = loadAccounts();
+  renderStats(accounts);
+  renderPipeline(accounts);
+  renderFollowups(accounts);
+  renderRecent(accounts);
+}
+
+function renderStats(accounts) {
+  const total = accounts.length;
+  const active = accounts.filter(a => !['Won','Lost'].includes(a.stage)).length;
+  const won = accounts.filter(a => a.stage === 'Won').length;
+  const overdue = accounts.filter(a => dueSeverity(a.followup) === 'overdue').length;
+  const dueToday = accounts.filter(a => dueSeverity(a.followup) === 'today').length;
+  const proposal = accounts.filter(a => a.stage === 'Proposal').length;
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card fade-up"><div class="stat-label">Accounts</div><div class="stat-value">${total}</div><div class="stat-sub">total</div></div>
+    <div class="stat-card fade-up"><div class="stat-label">Active</div><div class="stat-value" style="color:var(--accent2)">${active}</div><div class="stat-sub">in pipeline</div></div>
+    <div class="stat-card fade-up"><div class="stat-label">Proposals</div><div class="stat-value" style="color:var(--accent2)">${proposal}</div><div class="stat-sub">stage</div></div>
+    <div class="stat-card fade-up"><div class="stat-label">Won</div><div class="stat-value" style="color:var(--success)">${won}</div><div class="stat-sub">closed</div></div>
+    <div class="stat-card fade-up"><div class="stat-label">Due Today</div><div class="stat-value" style="color:var(--warning)">${dueToday}</div><div class="stat-sub">follow-ups</div></div>
+    <div class="stat-card fade-up"><div class="stat-label">Overdue</div><div class="stat-value" style="color:${overdue>0?'var(--accent)':'var(--muted)'}">${overdue}</div><div class="stat-sub">follow-ups</div></div>
+  `;
+}
+
+function renderPipeline(accounts) {
+  const active = accounts.filter(a => !['Won','Lost'].includes(a.stage));
+  const total = active.length || 1;
+  const bar = document.getElementById('pipelineBar');
+  const legend = document.getElementById('pipelineLegend');
+  bar.innerHTML = ''; legend.innerHTML = '';
+  ['Identified','Contacted','Meeting','Proposal'].forEach(stage => {
+    const count = active.filter(a => a.stage === stage).length;
+    if (count === 0) return;
+    const pct = (count / total) * 100;
+    bar.innerHTML += `<div class="pipeline-segment" style="flex:${pct};background:${STAGE_COLORS[stage]}">${count}</div>`;
+    legend.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${STAGE_COLORS[stage]}"></div>${stage} (${count})</div>`;
+  });
+  if (bar.innerHTML === '') bar.innerHTML = `<div class="pipeline-segment" style="flex:1;background:var(--border)">No active accounts</div>`;
+}
+
+function renderFollowups(accounts) {
+  const due = accounts
+    .filter(a => a.followup && !['Won','Lost'].includes(a.stage))
+    .sort((a,b) => new Date(a.followup) - new Date(b.followup))
+    .slice(0, 5);
+  const container = document.getElementById('followupList');
+  if (due.length === 0) { container.innerHTML = '<div class="empty-state">No follow-ups scheduled.<br>Add dates in Tracker.</div>'; return; }
+  container.innerHTML = due.map(a => {
+    const sev = dueSeverity(a.followup);
+    const cls = sev === 'overdue' ? 'overdue' : sev === 'today' ? 'due-today' : sev === 'soon' ? 'due-soon' : 'due-ok';
+    const label = sev === 'overdue' ? '⚠ Overdue' : sev === 'today' ? '● Today' : fmtDate(a.followup);
+    return `<div class="followup-row"><div><div class="fu-company">${a.company}</div><div class="fu-meta">${a.stage} · ${a.tier}</div></div><div class="fu-date ${cls}">${label}</div></div>`;
+  }).join('');
+}
+
+function renderRecent(accounts) {
+  const recent = [...accounts].reverse().slice(0, 5);
+  const container = document.getElementById('recentList');
+  if (recent.length === 0) { container.innerHTML = '<div class="empty-state">No accounts yet.<br>Add them in Tracker.</div>'; return; }
+  container.innerHTML = recent.map(a => `
+    <div class="followup-row">
+      <div><div class="fu-company">${a.company}</div><div class="fu-meta">${a.industry||a.tier}</div></div>
+      <div style="font-family:var(--mono);font-size:11px;color:${STAGE_COLORS[a.stage]}">${a.stage}</div>
+    </div>`).join('');
+}
+
+init();
+</script>
+</body>
+</html>

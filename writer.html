@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #e31937;
+    --accent2: #ff6b35;
+    --text: #f0f0f8;
+    --muted: #6b6b88;
+    --success: #22d3a0;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--sans);
+    min-height: 100vh; padding: 24px;
+    background-image:
+      radial-gradient(ellipse 80% 40% at 50% -10%, rgba(227,25,55,0.10) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px);
+  }
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 36px; height: 36px; background: var(--accent); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: white; flex-shrink: 0; }
+  .header-text h1 { font-size: 13px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); }
+  .header-text p { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.05em; }
+  .btn { border: none; border-radius: 7px; padding: 9px 18px; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #c8152f; transform: translateY(-1px); }
+  .btn-primary:disabled { background: #3a1a20; color: #6b2a35; cursor: not-allowed; transform: none; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+
+  /* TYPE SELECTOR */
+  .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+  @media (max-width: 700px) { .type-grid { grid-template-columns: repeat(2, 1fr); } }
+  .type-card { background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: all 0.2s; }
+  .type-card:hover { border-color: var(--muted); }
+  .type-card.selected { border-color: var(--accent); background: rgba(227,25,55,0.07); }
+  .type-icon { font-size: 18px; margin-bottom: 6px; }
+  .type-name { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .type-desc { font-family: var(--mono); font-size: 10px; color: var(--muted); line-height: 1.4; }
+
+  /* LAYOUT */
+  .two-col { display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* INPUTS */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .panel-header { padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .panel-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 6px; }
+  .panel-title::before { content: ''; display: inline-block; width: 3px; height: 10px; background: var(--accent); border-radius: 2px; }
+  .panel-body { padding: 18px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 7px; padding: 9px 12px; color: var(--text);
+    font-family: var(--mono); font-size: 12px; outline: none; transition: border-color 0.2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { resize: vertical; min-height: 70px; line-height: 1.6; }
+  .field select option { background: var(--surface2); }
+
+  /* OUTPUT */
+  .output-area { display: flex; flex-direction: column; gap: 14px; }
+  .output-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .output-header { padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: space-between; }
+  .output-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 6px; }
+  .output-label::before { content: ''; display: inline-block; width: 3px; height: 10px; background: var(--accent); border-radius: 2px; }
+  .output-text { padding: 20px; font-family: var(--mono); font-size: 13px; line-height: 1.9; color: #c8c8e0; white-space: pre-wrap; }
+  .subject-line { padding: 12px 20px; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .subject-line span { color: var(--text); font-weight: 500; }
+
+  .tips-box { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent2); border-radius: 0 12px 12px 0; padding: 16px 18px; }
+  .tips-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2); margin-bottom: 10px; }
+  .tips-list { font-family: var(--mono); font-size: 11px; color: #a0a0c0; line-height: 2; }
+
+  .char-count { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .char-ok { color: var(--success); }
+  .char-warn { color: var(--warning); }
+  .char-over { color: var(--accent); }
+
+  .empty-output { padding: 60px 20px; text-align: center; }
+  .empty-output p { font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 2; }
+
+  .loading-row { display: flex; align-items: center; gap: 10px; padding: 32px 20px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.35s ease; }
+
+  .variant-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .vtab { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .vtab.active { border-color: var(--accent); color: var(--text); background: rgba(227,25,55,0.08); }
+
+  .status-bar { font-family: var(--mono); font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .dot.active { background: var(--success); animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">J</div>
+    <div class="header-text">
+      <h1>Project Jarvis — Writer</h1>
+      <p>agent_01 · enterprise/fleet outreach drafting</p>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="dot" id="statusDot"></div>
+  <span id="statusText">Select a message type to get started.</span>
+</div>
+
+<!-- TYPE SELECTOR -->
+<div class="type-grid">
+  <div class="type-card selected" data-type="linkedin" onclick="selectType(this)">
+    <div class="type-icon">💼</div>
+    <div class="type-name">Cold LinkedIn</div>
+    <div class="type-desc">First touch via LinkedIn message</div>
+  </div>
+  <div class="type-card" data-type="cold_email" onclick="selectType(this)">
+    <div class="type-icon">📧</div>
+    <div class="type-name">Cold Email</div>
+    <div class="type-desc">Direct email, no prior contact</div>
+  </div>
+  <div class="type-card" data-type="followup" onclick="selectType(this)">
+    <div class="type-icon">🔁</div>
+    <div class="type-name">Follow-up</div>
+    <div class="type-desc">No response after initial outreach</div>
+  </div>
+  <div class="type-card" data-type="meeting" onclick="selectType(this)">
+    <div class="type-icon">📅</div>
+    <div class="type-name">Meeting Request</div>
+    <div class="type-desc">Request a call or in-person</div>
+  </div>
+  <div class="type-card" data-type="proposal" onclick="selectType(this)">
+    <div class="type-icon">📋</div>
+    <div class="type-name">Proposal Intro</div>
+    <div class="type-desc">Intro email alongside a proposal</div>
+  </div>
+  <div class="type-card" data-type="post_meeting" onclick="selectType(this)">
+    <div class="type-icon">✅</div>
+    <div class="type-name">Post-Meeting</div>
+    <div class="type-desc">Follow-up after a meeting or call</div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Message Details</div></div>
+      <div class="panel-body">
+        <div class="field"><label>Company</label><input type="text" id="fCompany" placeholder="e.g. Linfox" /></div>
+        <div class="field"><label>Contact Name</label><input type="text" id="fContact" placeholder="e.g. Sarah or Sarah Mitchell" /></div>
+        <div class="field"><label>Contact Title</label><input type="text" id="fTitle" placeholder="e.g. Fleet Manager" /></div>
+        <div class="field" id="contextField">
+          <label id="contextLabel">Context / Notes</label>
+          <textarea id="fContext" placeholder="Any relevant context — fleet size, recent news, ESG commitments, prior conversation..."></textarea>
+        </div>
+        <div class="field">
+          <label>Tone</label>
+          <select id="fTone">
+            <option value="confident_friendly">Confident + friendly (default)</option>
+            <option value="formal">More formal</option>
+            <option value="brief">Very brief / punchy</option>
+            <option value="warm">Warm + personal</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:4px" id="draftBtn" onclick="draft()">Draft Message ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="output-area" id="outputArea">
+    <div class="empty-output">
+      <p>Fill in the details on the left<br>and click Draft Message.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedType = 'linkedin';
+let lastDraft = null;
+
+const TYPE_META = {
+  linkedin: { label: 'Cold LinkedIn Message', limit: 300, limitLabel: 'LinkedIn messages work best under 300 characters.' },
+  cold_email: { label: 'Cold Email', limit: null, limitLabel: null },
+  followup: { label: 'Follow-up (No Response)', limit: null, limitLabel: null },
+  meeting: { label: 'Meeting Request', limit: null, limitLabel: null },
+  proposal: { label: 'Proposal Intro Email', limit: null, limitLabel: null },
+  post_meeting: { label: 'Post-Meeting Follow-up', limit: null, limitLabel: null },
+};
+
+const CONTEXT_LABELS = {
+  linkedin: 'Context (fleet size, ESG signals, recent news)',
+  cold_email: 'Context (fleet size, ESG signals, recent news)',
+  followup: 'When did you last reach out? Any response?',
+  meeting: 'What do you want to discuss? Any prior contact?',
+  proposal: 'What is the proposal for? Key numbers to reference?',
+  post_meeting: 'What was discussed? What were the next steps agreed?',
+};
+
+function selectType(el) {
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedType = el.dataset.type;
+  document.getElementById('contextLabel').textContent = CONTEXT_LABELS[selectedType];
+  document.getElementById('statusText').textContent = TYPE_META[selectedType].label + ' selected.';
+}
+
+function setStatus(text, active=false) {
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusDot').className = 'dot' + (active ? ' active' : '');
+}
+
+function charClass(len, limit) {
+  if (!limit) return '';
+  if (len <= limit * 0.8) return 'char-ok';
+  if (len <= limit) return 'char-warn';
+  return 'char-over';
+}
+
+async function draft() {
+  const company = document.getElementById('fCompany').value.trim();
+  const contact = document.getElementById('fContact').value.trim();
+  const title = document.getElementById('fTitle').value.trim();
+  const context = document.getElementById('fContext').value.trim();
+  const tone = document.getElementById('fTone').value;
+
+  if (!company) { alert('Please enter a company name.'); return; }
+
+  document.getElementById('draftBtn').disabled = true;
+  document.getElementById('outputArea').innerHTML = '<div class="loading-row"><div class="spinner"></div><span>Drafting message...</span></div>';
+  setStatus('Drafting...', true);
+
+  const toneDesc = {
+    confident_friendly: 'confident, friendly, low-pressure',
+    formal: 'professional and formal',
+    brief: 'very brief and punchy — get to the point fast',
+    warm: 'warm, personal, conversational',
+  }[tone];
+
+  const typeDesc = {
+    linkedin: 'a cold LinkedIn connection message or InMail. Keep it concise — ideally under 300 characters for the connection note, or 2-3 short paragraphs for InMail.',
+    cold_email: 'a cold outreach email with a subject line. 3-4 short paragraphs.',
+    followup: 'a follow-up message after no response to an earlier outreach. Reference the previous contact briefly. Keep it short and non-pushy.',
+    meeting: 'a meeting or call request. Be specific about what you want to discuss and why it is worth their time.',
+    proposal: 'an introductory email to accompany a fleet electrification proposal. Reference key financial benefits if context is provided.',
+    post_meeting: 'a post-meeting follow-up. Thank them, summarise key points discussed, confirm next steps.',
+  }[selectedType];
+
+  const isEmail = ['cold_email','followup','meeting','proposal','post_meeting'].includes(selectedType);
+
+  const prompt = `You are the Writer agent in Project Jarvis — a Tesla Enterprise/Fleet sales tool for Nate Novacek, a Tesla Sales Advisor based on the Gold Coast, Queensland, Australia.
+
+Draft ${typeDesc}
+
+Details:
+- Company: ${company}
+- Contact name: ${contact || 'not specified'}
+- Contact title: ${title || 'not specified'}
+- Context: ${context || 'none provided'}
+- Tone: ${toneDesc}
+
+Voice guidelines:
+- Write as Nate — first person, Tesla Sales Advisor, Gold Coast QLD
+- Confident, friendly, low-pressure — never pushy or salesy
+- Neutral and factual — no speculation on unreleased Tesla products or timelines
+- Reference specific details about the company or contact where context allows
+- Natural, human language — avoid AI-sounding phrases
+
+Return ONLY valid JSON (no markdown):
+{
+  ${isEmail ? '"subject": "email subject line",' : ''}
+  "message": "the full drafted message",
+  "tips": ["tip 1 on how to personalise or strengthen this message", "tip 2", "tip 3"]
+}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 800, messages: [{ role: "user", content: prompt }] })
+    });
+    const data = await res.json();
+    const raw = data.content.map(b => b.text||'').join('');
+    const result = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    lastDraft = result;
+
+    const meta = TYPE_META[selectedType];
+    const msgLen = result.message.length;
+    const charInfo = meta.limit ? `<span class="${charClass(msgLen, meta.limit)}">${msgLen} chars</span>${meta.limit ? ` / ${meta.limit} recommended` : ''}` : `${msgLen} chars`;
+
+    document.getElementById('outputArea').innerHTML = `
+      <div class="output-box fade-up">
+        <div class="output-header">
+          <div class="output-label">${meta.label}</div>
+          <div class="char-count">${charInfo}</div>
+        </div>
+        ${result.subject ? `<div class="subject-line">Subject: <span>${result.subject}</span></div>` : ''}
+        <div class="output-text" id="draftText">${result.message}</div>
+        <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="copyDraft()">Copy</button>
+          <button class="btn btn-ghost" onclick="redraft()">Redraft ↺</button>
+        </div>
+      </div>
+      <div class="tips-box fade-up">
+        <div class="tips-title">Personalisation Tips</div>
+        <div class="tips-list">${result.tips.map(t => `• ${t}`).join('<br>')}</div>
+      </div>`;
+
+    setStatus(`${meta.label} drafted for ${company}.`);
+  } catch(e) {
+    document.getElementById('outputArea').innerHTML = '<div class="empty-output"><p>Draft failed. Try again.</p></div>';
+    setStatus('Draft failed.');
+  }
+  document.getElementById('draftBtn').disabled = false;
+}
+
+function copyDraft() {
+  const el = document.getElementById('draftText');
+  if (el) navigator.clipboard.writeText(el.textContent).then(() => setStatus('Copied to clipboard.'));
+}
+
+function redraft() {
+  draft();
+}
+
+document.getElementById('statusText').textContent = 'Select a message type and fill in details.';
+</script>
+</body>
+</html>
