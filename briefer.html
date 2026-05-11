@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #e31937;
+    --accent2: #ff6b35;
+    --text: #f0f0f8;
+    --muted: #6b6b88;
+    --success: #22d3a0;
+    --warning: #f5c842;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+    --s-identified: #6b6b88;
+    --s-contacted: #4a90d9;
+    --s-meeting: #f5c842;
+    --s-proposal: #ff6b35;
+    --s-won: #22d3a0;
+    --s-lost: #e31937;
+  }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--sans);
+    min-height: 100vh; padding: 24px;
+    background-image:
+      radial-gradient(ellipse 80% 40% at 50% -10%, rgba(227,25,55,0.10) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px);
+  }
+
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 36px; height: 36px; background: var(--accent); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: white; flex-shrink: 0; }
+  .header-text h1 { font-size: 13px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); }
+  .header-text p { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.05em; }
+
+  .btn { border: none; border-radius: 7px; padding: 9px 18px; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #c8152f; transform: translateY(-1px); }
+  .btn-primary:disabled { background: #3a1a20; color: #6b2a35; cursor: not-allowed; transform: none; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+
+  /* DATE + GREETING */
+  .greeting-row { margin-bottom: 24px; }
+  .greeting-date { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .greeting-text { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 24px; }
+  @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(3, 1fr); } }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .stat-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .stat-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* PIPELINE BAR */
+  .pipeline-bar-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .section-label::before { content: ''; display: inline-block; width: 3px; height: 10px; background: var(--accent); border-radius: 2px; }
+  .pipeline-bar { display: flex; height: 32px; border-radius: 6px; overflow: hidden; gap: 2px; margin-bottom: 12px; }
+  .pipeline-segment { display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; font-weight: 500; color: white; transition: flex 0.8s ease; min-width: 0; overflow: hidden; white-space: nowrap; }
+  .pipeline-legend { display: flex; flex-wrap: wrap; gap: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* FOLLOWUPS */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .panel-header { padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .panel-body { padding: 0; }
+
+  .followup-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  .followup-row:last-child { border-bottom: none; }
+  .followup-row:hover { background: var(--surface2); }
+  .fu-company { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .fu-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fu-date { font-family: var(--mono); font-size: 11px; font-weight: 500; text-align: right; }
+  .overdue { color: var(--accent); }
+  .due-today { color: var(--warning); }
+  .due-soon { color: var(--accent2); }
+  .due-ok { color: var(--muted); }
+
+  .stage-pill { font-family: var(--mono); font-size: 9px; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* AI NARRATIVE */
+  .narrative-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .narrative-text { font-family: var(--mono); font-size: 13px; line-height: 1.9; color: #c8c8e0; white-space: pre-wrap; }
+
+  /* ACTIONS */
+  .actions-list { display: flex; flex-direction: column; gap: 0; }
+  .action-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .action-row:last-child { border-bottom: none; }
+  .action-num { font-family: var(--mono); font-size: 11px; color: var(--accent); font-weight: 500; flex-shrink: 0; width: 20px; }
+  .action-company { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .action-text { font-family: var(--mono); font-size: 11px; color: #a0a0c0; line-height: 1.5; }
+  .action-priority { font-family: var(--mono); font-size: 9px; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; margin-left: auto; flex-shrink: 0; }
+  .priority-high { background: rgba(227,25,55,0.15); color: var(--accent); border: 1px solid rgba(227,25,55,0.3); }
+  .priority-med { background: rgba(245,200,66,0.15); color: var(--warning); border: 1px solid rgba(245,200,66,0.3); }
+  .priority-low { background: rgba(107,107,136,0.15); color: var(--muted); border: 1px solid rgba(107,107,136,0.3); }
+
+  /* LOADING */
+  .loading-row { display: flex; align-items: center; gap: 10px; padding: 24px 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state { padding: 32px 18px; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 2; }
+
+  .generate-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+  .last-generated { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  .green { color: var(--success); }
+  .orange { color: var(--accent2); }
+  .red { color: var(--accent); }
+  .yellow { color: var(--warning); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s ease; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">J</div>
+    <div class="header-text">
+      <h1>Project Jarvis — Briefer</h1>
+      <p>agent_05 · daily pipeline intelligence</p>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span class="last-generated" id="lastGenerated"></span>
+    <button class="btn btn-primary" id="briefBtn" onclick="generateBrief()">Generate Brief ↗</button>
+  </div>
+</div>
+
+<div class="greeting-row">
+  <div class="greeting-date" id="greetingDate"></div>
+  <div class="greeting-text" id="greetingText">Good morning, Nate.</div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row" id="statsRow"></div>
+
+<!-- PIPELINE BAR -->
+<div class="pipeline-bar-wrap">
+  <div class="section-label">Pipeline Overview</div>
+  <div class="pipeline-bar" id="pipelineBar"></div>
+  <div class="pipeline-legend" id="pipelineLegend"></div>
+</div>
+
+<!-- FOLLOW-UPS + STAGE BREAKDOWN -->
+<div class="two-col">
+  <div class="panel">
+    <div class="panel-header"><div class="section-label" style="margin:0">Follow-ups Due</div></div>
+    <div class="panel-body" id="followupList"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><div class="section-label" style="margin:0">Stage Breakdown</div></div>
+    <div class="panel-body" id="stageBreakdown"></div>
+  </div>
+</div>
+
+<!-- AI NARRATIVE -->
+<div style="margin-top:16px">
+  <div class="section-label" style="margin-bottom:12px">Pipeline Narrative</div>
+  <div class="narrative-box" id="narrativeBox">
+    <div class="empty-state">Click "Generate Brief" to get your AI-powered pipeline narrative and suggested next actions.</div>
+  </div>
+</div>
+
+<!-- SUGGESTED ACTIONS -->
+<div style="margin-top:16px">
+  <div class="section-label" style="margin-bottom:12px">Suggested Next Actions</div>
+  <div class="panel" id="actionsPanel">
+    <div class="empty-state">Actions will appear after generating your brief.</div>
+  </div>
+</div>
+
+<script>
+const STAGES = ['Identified','Contacted','Meeting','Proposal','Won','Lost'];
+const STAGE_COLORS = { Identified:'var(--s-identified)', Contacted:'var(--s-contacted)', Meeting:'var(--s-meeting)', Proposal:'var(--s-proposal)', Won:'var(--s-won)', Lost:'var(--s-lost)' };
+
+function loadAccounts() {
+  try { return JSON.parse(localStorage.getItem('jarvis_tracker') || '[]'); } catch(e) { return []; }
+}
+
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning, Nate.';
+  if (h < 17) return 'Good afternoon, Nate.';
+  return 'Good evening, Nate.';
+}
+
+function fmtDateShort(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short' });
+}
+
+function dueSeverity(dateStr) {
+  if (!dateStr) return null;
+  const diff = (new Date(dateStr) - new Date()) / 86400000;
+  if (diff < 0) return 'overdue';
+  if (diff === 0) return 'today';
+  if (diff <= 3) return 'soon';
+  return 'ok';
+}
+
+function init() {
+  // Date + greeting
+  const now = new Date();
+  document.getElementById('greetingDate').textContent = now.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  document.getElementById('greetingText').textContent = greeting();
+
+  const accounts = loadAccounts();
+  renderStats(accounts);
+  renderPipelineBar(accounts);
+  renderFollowups(accounts);
+  renderStageBreakdown(accounts);
+
+  const last = localStorage.getItem('jarvis_brief_time');
+  if (last) document.getElementById('lastGenerated').textContent = 'Last brief: ' + last;
+}
+
+function renderStats(accounts) {
+  const total = accounts.length;
+  const active = accounts.filter(a => !['Won','Lost'].includes(a.stage)).length;
+  const won = accounts.filter(a => a.stage === 'Won').length;
+  const overdue = accounts.filter(a => dueSeverity(a.followup) === 'overdue').length;
+  const dueToday = accounts.filter(a => dueSeverity(a.followup) === 'today').length;
+  const inProposal = accounts.filter(a => a.stage === 'Proposal').length;
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">${total}</div><div class="stat-sub">accounts</div></div>
+    <div class="stat-card"><div class="stat-label">Active</div><div class="stat-value orange">${active}</div><div class="stat-sub">in pipeline</div></div>
+    <div class="stat-card"><div class="stat-label">Proposals</div><div class="stat-value" style="color:var(--accent2)">${inProposal}</div><div class="stat-sub">stage</div></div>
+    <div class="stat-card"><div class="stat-label">Won</div><div class="stat-value green">${won}</div><div class="stat-sub">closed</div></div>
+    <div class="stat-card"><div class="stat-label">Due Today</div><div class="stat-value yellow">${dueToday}</div><div class="stat-sub">follow-ups</div></div>
+    <div class="stat-card"><div class="stat-label">Overdue</div><div class="stat-value red">${overdue}</div><div class="stat-sub">follow-ups</div></div>
+  `;
+}
+
+function renderPipelineBar(accounts) {
+  const active = accounts.filter(a => !['Won','Lost'].includes(a.stage));
+  const total = active.length || 1;
+  const bar = document.getElementById('pipelineBar');
+  const legend = document.getElementById('pipelineLegend');
+  bar.innerHTML = '';
+  legend.innerHTML = '';
+  ['Identified','Contacted','Meeting','Proposal'].forEach(stage => {
+    const count = active.filter(a => a.stage === stage).length;
+    const pct = (count / total) * 100;
+    if (count === 0) return;
+    bar.innerHTML += `<div class="pipeline-segment" style="flex:${pct};background:${STAGE_COLORS[stage]}">${count}</div>`;
+    legend.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${STAGE_COLORS[stage]}"></div>${stage} (${count})</div>`;
+  });
+}
+
+function renderFollowups(accounts) {
+  const withDates = accounts
+    .filter(a => a.followup && !['Won','Lost'].includes(a.stage))
+    .sort((a,b) => new Date(a.followup) - new Date(b.followup))
+    .slice(0, 8);
+
+  const container = document.getElementById('followupList');
+  if (withDates.length === 0) {
+    container.innerHTML = '<div class="empty-state">No follow-ups scheduled.<br>Add dates in Tracker.</div>';
+    return;
+  }
+  container.innerHTML = withDates.map(a => {
+    const sev = dueSeverity(a.followup);
+    const cls = sev === 'overdue' ? 'overdue' : sev === 'today' ? 'due-today' : sev === 'soon' ? 'due-soon' : 'due-ok';
+    const label = sev === 'overdue' ? '⚠ Overdue' : sev === 'today' ? '● Today' : fmtDateShort(a.followup);
+    return `<div class="followup-row">
+      <div>
+        <div class="fu-company">${a.company}</div>
+        <div class="fu-meta">${a.stage} · ${a.tier}</div>
+      </div>
+      <div class="fu-date ${cls}">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderStageBreakdown(accounts) {
+  const container = document.getElementById('stageBreakdown');
+  container.innerHTML = STAGES.map(stage => {
+    const count = accounts.filter(a => a.stage === stage).length;
+    return `<div class="followup-row">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${STAGE_COLORS[stage]};flex-shrink:0"></div>
+        <div class="fu-company" style="font-size:12px">${stage}</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${count>0?'var(--text)':'var(--muted)'}">${count}</div>
+    </div>`;
+  }).join('');
+}
+
+async function generateBrief() {
+  const accounts = loadAccounts();
+  if (accounts.length === 0) {
+    document.getElementById('narrativeBox').innerHTML = '<div class="empty-state">No accounts in Tracker yet. Add accounts first.</div>';
+    return;
+  }
+
+  document.getElementById('briefBtn').disabled = true;
+  document.getElementById('narrativeBox').innerHTML = '<div class="loading-row"><div class="spinner"></div><span>Generating pipeline narrative...</span></div>';
+  document.getElementById('actionsPanel').innerHTML = '<div class="loading-row"><div class="spinner"></div><span>Identifying next actions...</span></div>';
+
+  const overdue = accounts.filter(a => dueSeverity(a.followup) === 'overdue');
+  const dueToday = accounts.filter(a => dueSeverity(a.followup) === 'today');
+  const dueSoon = accounts.filter(a => dueSeverity(a.followup) === 'soon');
+  const inProposal = accounts.filter(a => a.stage === 'Proposal');
+  const inMeeting = accounts.filter(a => a.stage === 'Meeting');
+
+  const prompt = `You are the Briefer agent in Project Jarvis — a Tesla Enterprise/Fleet sales intelligence system for Nate Novacek, a Tesla Sales Advisor based on the Gold Coast, Queensland, Australia. He is building a shadow Enterprise/Fleet pipeline to demonstrate value for a career transition to Tesla's Enterprise/Fleet team.
+
+Today's date: ${new Date().toLocaleDateString('en-AU', {weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+
+Pipeline snapshot:
+- Total accounts: ${accounts.length}
+- Active (not won/lost): ${accounts.filter(a=>!['Won','Lost'].includes(a.stage)).length}
+- By stage: ${STAGES.map(s => `${s}: ${accounts.filter(a=>a.stage===s).length}`).join(', ')}
+- Overdue follow-ups: ${overdue.map(a=>a.company).join(', ')||'none'}
+- Due today: ${dueToday.map(a=>a.company).join(', ')||'none'}
+- Due this week: ${dueSoon.map(a=>a.company).join(', ')||'none'}
+- In proposal stage: ${inProposal.map(a=>a.company).join(', ')||'none'}
+- In meeting stage: ${inMeeting.map(a=>a.company).join(', ')||'none'}
+- All accounts: ${accounts.map(a=>`${a.company} (${a.stage}, ${a.tier}${a.followup?', follow-up '+a.followup:''})`).join('; ')}
+
+Return ONLY valid JSON (no markdown):
+{
+  "narrative": "3-4 paragraph pipeline narrative. Confident, concise, first-person as Nate's AI assistant. Assess pipeline health, highlight urgency, note progress. Reference specific company names. End with one motivating sentence.",
+  "actions": [
+    { "company": "company name", "action": "specific recommended next action", "priority": "High" | "Med" | "Low" },
+    { "company": "company name", "action": "specific recommended next action", "priority": "High" | "Med" | "Low" },
+    { "company": "company name", "action": "specific recommended next action", "priority": "High" | "Med" | "Low" },
+    { "company": "company name", "action": "specific recommended next action", "priority": "High" | "Med" | "Low" },
+    { "company": "company name", "action": "specific recommended next action", "priority": "High" | "Med" | "Low" }
+  ]
+}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, messages: [{ role: "user", content: prompt }] })
+    });
+    const data = await res.json();
+    const raw = data.content.map(b => b.text||'').join('');
+    const brief = JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    // Narrative
+    document.getElementById('narrativeBox').innerHTML = `<div class="narrative-text fade-up">${brief.narrative}</div>`;
+
+    // Actions
+    document.getElementById('actionsPanel').innerHTML = `<div class="actions-list fade-up">${brief.actions.map((a,i) => `
+      <div class="action-row">
+        <div class="action-num">0${i+1}</div>
+        <div style="flex:1">
+          <div class="action-company">${a.company}</div>
+          <div class="action-text">${a.action}</div>
+        </div>
+        <div class="action-priority priority-${a.priority.toLowerCase()}">${a.priority}</div>
+      </div>`).join('')}</div>`;
+
+    const now = new Date().toLocaleTimeString('en-AU', {hour:'2-digit',minute:'2-digit'});
+    localStorage.setItem('jarvis_brief_time', now);
+    document.getElementById('lastGenerated').textContent = 'Last brief: ' + now;
+
+  } catch(e) {
+    document.getElementById('narrativeBox').innerHTML = '<div class="empty-state">Generation failed. Try again.</div>';
+    document.getElementById('actionsPanel').innerHTML = '<div class="empty-state">—</div>';
+  }
+  document.getElementById('briefBtn').disabled = false;
+}
+
+init();
+</script>
+</body>
+</html>
