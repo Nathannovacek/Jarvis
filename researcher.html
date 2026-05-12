@@ -1,7 +1,147 @@
-J
-PROJECT JARVIS — RESEARCHER
-agent_02 · enterprise/fleet prospect intelligence
-
-RESEARCH ↗
-
-Ready. Enter a company name to generate an account brief.
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a24;
+    --border: #2a2a3a; --accent: #e31937; --accent2: #ff6b35;
+    --text: #f0f0f8; --muted: #6b6b88; --success: #22d3a0;
+    --mono: 'DM Mono', monospace; --sans: 'Syne', sans-serif;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; padding: 24px; background-image: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(227,25,55,0.12) 0%, transparent 60%); }
+  .header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .logo { width: 36px; height: 36px; background: var(--accent); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: white; flex-shrink: 0; }
+  .header-text h1 { font-size: 13px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); }
+  .header-text p { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .input-row { display: flex; gap: 10px; margin-bottom: 20px; }
+  .input-wrap { flex: 1; }
+  input[type="text"] { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; color: var(--text); font-family: var(--mono); font-size: 13px; outline: none; }
+  input[type="text"]:focus { border-color: var(--accent); }
+  input[type="text"]::placeholder { color: var(--muted); }
+  .btn-run { background: var(--accent); border: none; border-radius: 8px; padding: 12px 22px; color: white; font-family: var(--sans); font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+  .btn-run:disabled { background: #3a1a20; color: #6b2a35; cursor: not-allowed; }
+  .status-bar { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 16px; min-height: 18px; }
+  .result-container { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .result-container.visible { display: block; }
+  .result-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface2); }
+  .company-name { font-size: 18px; font-weight: 800; }
+  .tier-badge { font-family: var(--mono); font-size: 10px; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; }
+  .tier-1 { background: rgba(227,25,55,0.2); color: var(--accent); border: 1px solid rgba(227,25,55,0.3); }
+  .tier-2 { background: rgba(255,107,53,0.2); color: var(--accent2); border: 1px solid rgba(255,107,53,0.3); }
+  .tier-3 { background: rgba(34,211,160,0.15); color: var(--success); border: 1px solid rgba(34,211,160,0.25); }
+  .sections-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .section { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+  .section:nth-child(odd) { border-right: 1px solid var(--border); }
+  .section.full-width { grid-column: 1 / -1; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .section-content { font-size: 13px; line-height: 1.6; color: #c8c8e0; font-family: var(--mono); }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 3px 9px; font-family: var(--mono); font-size: 11px; color: #a0a0c0; }
+  .score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .score-label { font-family: var(--mono); font-size: 11px; color: var(--muted); width: 100px; flex-shrink: 0; }
+  .score-bar-bg { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 1s ease; }
+  .score-val { font-family: var(--mono); font-size: 11px; color: var(--text); width: 28px; text-align: right; }
+  .outreach-box { background: var(--surface2); border-left: 3px solid var(--accent); padding: 12px 16px; font-family: var(--mono); font-size: 12px; line-height: 1.7; color: #c8c8e0; white-space: pre-wrap; }
+  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto; display: none; }
+  .spinner.visible { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-box { padding: 20px; font-family: var(--mono); font-size: 12px; color: var(--accent); display: none; }
+  .error-box.visible { display: block; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">J</div>
+  <div class="header-text">
+    <h1>Project Jarvis — Researcher</h1>
+    <p>agent_02 · enterprise/fleet prospect intelligence</p>
+  </div>
+</div>
+<div class="input-row">
+  <div class="input-wrap">
+    <input type="text" id="companyInput" placeholder="Enter company name (e.g. Linfox, BHP, Gold Coast City Council)..." />
+  </div>
+  <button class="btn-run" id="runBtn" onclick="runResearch()">Research ↗</button>
+</div>
+<div class="status-bar" id="statusText">Ready. Enter a company name to generate an account brief.</div>
+<div class="spinner" id="spinner"></div>
+<div class="result-container" id="resultContainer">
+  <div class="result-header">
+    <div class="company-name" id="resCompany">—</div>
+    <div class="tier-badge" id="resTier">—</div>
+  </div>
+  <div class="sections-grid">
+    <div class="section"><div class="section-label">Overview</div><div class="section-content" id="resOverview">—</div></div>
+    <div class="section"><div class="section-label">Fleet Profile</div><div class="section-content" id="resFleet">—</div></div>
+    <div class="section"><div class="section-label">EV Readiness Signals</div><div class="section-content" id="resSignals">—</div></div>
+    <div class="section"><div class="section-label">Key Decision Makers</div><div class="section-content" id="resDMs">—</div></div>
+    <div class="section full-width"><div class="section-label">Opportunity Score</div><div id="resScores"></div></div>
+    <div class="section full-width"><div class="section-label">Tesla Angle</div><div class="section-content" id="resTeslaAngle">—</div></div>
+    <div class="section full-width"><div class="section-label">Suggested Outreach Hook</div><div class="outreach-box" id="resOutreach">—</div></div>
+    <div class="section full-width"><div class="section-label">Tags</div><div class="tag-list" id="resTags"></div></div>
+  </div>
+</div>
+<div class="error-box" id="errorBox"></div>
+<script>
+const API_KEY = "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";
+async function runResearch() {
+  const company = document.getElementById('companyInput').value.trim();
+  if (!company) return;
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('resultContainer').classList.remove('visible');
+  document.getElementById('errorBox').classList.remove('visible');
+  document.getElementById('spinner').classList.add('visible');
+  document.getElementById('statusText').textContent = 'Researching ' + company + '...';
+  const prompt = `You are the Researcher agent in Project Jarvis — an enterprise/fleet sales intelligence system for a Tesla Sales Advisor in Queensland, Australia. Produce a structured account brief for: "${company}"\n\nReturn ONLY valid JSON (no markdown, no preamble):\n{\n  "company": "Full official company name",\n  "tier": "Tier 1" or "Tier 2" or "Tier 3",\n  "overview": "2-3 sentence company overview",\n  "fleet_profile": "Estimated fleet size and composition.",\n  "ev_readiness_signals": "3-5 signals separated by newline",\n  "decision_makers": "Key titles to target",\n  "scores": {"Fleet Size": 75, "EV Readiness": 60, "QLD Presence": 80, "ESG Pressure": 70, "Deal Potential": 75},\n  "tesla_angle": "2-3 sentences on why Tesla fits",\n  "outreach_hook": "3-4 sentence opener signed off as Tesla Sales Advisor QLD",\n  "tags": ["tag1","tag2","tag3","tag4"]\n}`;
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": API_KEY,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, messages: [{ role: "user", content: prompt }] })
+    });
+    const data = await response.json();
+    document.getElementById('spinner').classList.remove('visible');
+    if (!response.ok || data.error) throw new Error(data.error?.message || 'API error');
+    const brief = JSON.parse(data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim());
+    document.getElementById('resCompany').textContent = brief.company;
+    const tierEl = document.getElementById('resTier');
+    tierEl.textContent = brief.tier;
+    tierEl.className = 'tier-badge ' + brief.tier.toLowerCase().replace(' ', '-');
+    document.getElementById('resOverview').textContent = brief.overview;
+    document.getElementById('resFleet').textContent = brief.fleet_profile;
+    document.getElementById('resSignals').innerHTML = brief.ev_readiness_signals.split('\n').map(s => s.trim()).filter(Boolean).map(s => '• ' + s).join('<br>');
+    document.getElementById('resDMs').textContent = brief.decision_makers;
+    const sc = document.getElementById('resScores');
+    sc.innerHTML = '';
+    for (const [label, val] of Object.entries(brief.scores)) {
+      sc.innerHTML += `<div class="score-row"><span class="score-label">${label}</span><div class="score-bar-bg"><div class="score-bar-fill" style="width:0%" data-target="${val}%"></div></div><span class="score-val">${val}%</span></div>`;
+    }
+    setTimeout(() => { sc.querySelectorAll('.score-bar-fill').forEach(el => { el.style.width = el.dataset.target; }); }, 100);
+    document.getElementById('resTeslaAngle').textContent = brief.tesla_angle;
+    document.getElementById('resOutreach').textContent = brief.outreach_hook;
+    document.getElementById('resTags').innerHTML = brief.tags.map(t => `<span class="tag">${t}</span>`).join('');
+    document.getElementById('resultContainer').classList.add('visible');
+    document.getElementById('statusText').textContent = 'Brief generated for ' + brief.company;
+    document.getElementById('runBtn').disabled = false;
+  } catch (err) {
+    document.getElementById('spinner').classList.remove('visible');
+    document.getElementById('runBtn').disabled = false;
+    const errBox = document.getElementById('errorBox');
+    errBox.textContent = 'Error: ' + err.message;
+    errBox.classList.add('visible');
+    document.getElementById('statusText').textContent = 'Research failed.';
+  }
+}
+document.getElementById('companyInput').addEventListener('keydown', e => { if (e.key === 'Enter') runResearch(); });
+</script>
+</body>
+</html>
