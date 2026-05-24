@@ -79,6 +79,12 @@ background-image:
 .empty-state { padding: 32px 18px; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 2; }
 .generate-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
 .last-generated { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.voice-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.btn-voice { border: 1px solid var(--border); border-radius: 7px; padding: 7px 16px; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; cursor: pointer; transition: all 0.2s; background: var(--surface2); color: var(--text); display: flex; align-items: center; gap: 6px; }
+.btn-voice:hover { border-color: var(--accent); color: var(--accent); }
+.btn-voice.playing { border-color: var(--success); color: var(--success); background: rgba(34,211,160,0.08); }
+.btn-voice.stop { border-color: var(--accent); color: var(--accent); background: rgba(227,25,55,0.08); }
+.voice-status { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.05em; }
 .green { color: var(--success); } .orange { color: var(--accent2); }
 .red   { color: var(--accent); }  .yellow { color: var(--warning); }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -136,7 +142,14 @@ background-image:
 </div>
 
 <div style="margin-top:16px">
-  <div class="section-label" style="margin-bottom:12px">Pipeline Narrative</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <div class="section-label" style="margin:0">Pipeline Narrative</div>
+    <div class="voice-controls" id="voiceControls" style="display:none">
+      <button class="btn-voice" id="playBtn" onclick="speakNarrative()">▶ Play</button>
+      <button class="btn-voice stop" id="stopBtn" onclick="stopSpeech()" style="display:none">⏹ Stop</button>
+      <span class="voice-status" id="voiceStatus"></span>
+    </div>
+  </div>
   <div class="narrative-box" id="narrativeBox">
     <div class="empty-state">Click "Generate Brief" to get your AI-powered pipeline narrative and suggested next actions.</div>
   </div>
@@ -151,6 +164,38 @@ background-image:
 
 <script>
 const WORKER = 'https://jarvis-api.nathanjnovacek.workers.dev';
+let currentNarrative = '';
+
+function speakNarrative() {
+  if (!currentNarrative) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(currentNarrative);
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+  // Prefer a natural English voice if available
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Daniel') || (v.lang === 'en-AU') || (v.lang === 'en-GB'));
+  if (preferred) utterance.voice = preferred;
+  utterance.onstart = () => {
+    document.getElementById('playBtn').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'flex';
+    document.getElementById('voiceStatus').textContent = 'narrating...';
+  };
+  utterance.onend = utterance.onerror = () => {
+    document.getElementById('playBtn').style.display = 'flex';
+    document.getElementById('stopBtn').style.display = 'none';
+    document.getElementById('voiceStatus').textContent = '';
+  };
+  window.speechSynthesis.speak(utterance);
+}
+
+function stopSpeech() {
+  window.speechSynthesis.cancel();
+  document.getElementById('playBtn').style.display = 'flex';
+  document.getElementById('stopBtn').style.display = 'none';
+  document.getElementById('voiceStatus').textContent = '';
+}
 const STAGES = ['Identified','Contacted','Meeting','Proposal','Won','Lost'];
 const STAGE_COLORS = { Identified:'var(--s-identified)', Contacted:'var(--s-contacted)', Meeting:'var(--s-meeting)', Proposal:'var(--s-proposal)', Won:'var(--s-won)', Lost:'var(--s-lost)' };
 
@@ -333,8 +378,12 @@ Return ONLY valid JSON (no markdown):
     const raw   = data.content.map(b => b.text||'').join('');
     const brief = JSON.parse(raw.replace(/```json|```/g,'').trim());
 
+    currentNarrative = brief.narrative;
     document.getElementById('narrativeBox').innerHTML =
       `<div class="narrative-text fade-up">${brief.narrative}</div>`;
+    document.getElementById('voiceControls').style.display = 'flex';
+    document.getElementById('playBtn').style.display = 'flex';
+    document.getElementById('stopBtn').style.display = 'none';
 
     document.getElementById('actionsPanel').innerHTML =
       `<div class="actions-list fade-up">${brief.actions.map((a,i) => `
