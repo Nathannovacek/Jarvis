@@ -164,6 +164,8 @@ background-image:
 
 <script>
 const WORKER = 'https://jarvis-api.nathanjnovacek.workers.dev';
+const EL_KEY = '524e8d0043b319a5013b49f810ef987685954a8a985abd2a409bbeb9eafc7449';
+const EL_VOICE = 'R7BbNPVPZ7m6zUDIKGI3';
 let currentNarrative = '';
 let currentAudio = null;
 
@@ -176,10 +178,18 @@ async function speakNarrative() {
   document.getElementById('voiceStatus').textContent = 'loading audio...';
 
   try {
-    const res = await fetch(`${WORKER}/elevenlabs/tts`, {
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${EL_VOICE}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: currentNarrative }),
+      headers: {
+        'Accept': 'audio/mpeg',
+        'Content-Type': 'application/json',
+        'xi-api-key': EL_KEY,
+      },
+      body: JSON.stringify({
+        text: currentNarrative,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+      }),
     });
     if (!res.ok) {
       const errText = await res.text();
